@@ -3,7 +3,7 @@
     "targets": ["omnifocus"],
     "author": "Template Chooser contributors",
     "identifier": "org.community.omnifocus.template-chooser.shared",
-    "version": "1.2",
+    "version": "1.2.1",
     "description": "Choose from pre-made TaskPaper templates with dynamic date placeholders",
     "label": "Template Chooser - Shared",
     "shortLabel": "Templates",
@@ -34,27 +34,40 @@
     // Public examples only. Keep personal templates in a separate local copy.
     const TEMPLATES = [
         {
-            name: "Example Project",
+            name: "Plan a Trip",
             placeholders: [
-                {key: "projectname", label: "Project Name", type: "text"},
-                {key: "duedate", label: "Due Date", type: "date"}
+                {key: "tripname", label: "Trip Name", type: "text"},
+                {key: "departure", label: "Departure Date", type: "date"}
             ],
-            taskpaper: `«projectname»:
-- Plan the project @defer(«duedate» -14d) @due(«duedate» -7d)
-- Review the work @due(«duedate» -2d 3pm)
-- Finish the project @due(«duedate»)`
+            taskpaper: `«tripname»:
+- Choose transport and accommodation @due(«departure» -4w)
+- Make a packing list @due(«departure» -7d)
+- Check tickets and reservations @due(«departure» -2d)
+- Pack bags @due(«departure» -1d)`
         },
         {
-            name: "Event Preparation",
+            name: "Host a Dinner",
             placeholders: [
-                {key: "eventname", label: "Event Name", type: "text"},
-                {key: "eventdate", label: "Event Date", type: "date"}
+                {key: "dinnername", label: "Dinner Name", type: "text"},
+                {key: "dinnerdate", label: "Dinner Date", type: "date"}
             ],
-            taskpaper: `«eventname»:
-- Confirm arrangements @due(«eventdate» -4w)
-- Prepare materials @due(«eventdate» -7d)
-- Send a reminder @due(«eventdate» -2d)
-- Pack equipment @due(«eventdate» -1d)`
+            taskpaper: `«dinnername»:
+- Invite guests @due(«dinnerdate» -14d)
+- Plan the menu @due(«dinnerdate» -7d)
+- Buy groceries @due(«dinnerdate» -1d)
+- Prepare the table @due(«dinnerdate» 3pm)`
+        },
+        {
+            name: "Organize a Room",
+            placeholders: [
+                {key: "roomname", label: "Room Name", type: "text"},
+                {key: "finishdate", label: "Finish Date", type: "date"}
+            ],
+            taskpaper: `Organize «roomname»:
+- Choose an area to start @defer(«finishdate» -7d)
+- Sort items to keep, donate, or recycle @due(«finishdate» -3d)
+- Clean and arrange the space @due(«finishdate» -1d)
+- Take donations and recycling out @due(«finishdate»)`
         }
     ];
 

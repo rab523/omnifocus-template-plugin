@@ -7,7 +7,7 @@ Create projects from reusable TaskPaper templates. Choose a template, enter its 
 1. Download [TemplateChooser-Shared.omnifocusjs](TemplateChooser-Shared.omnifocusjs?raw=true).
 2. Open the downloaded file with OmniFocus and follow its plug-in installation prompt. This requires an OmniFocus edition that supports Omni Automation.
 3. Choose **Template Chooser - Shared** from the Automation menu.
-4. Select **Example Project** or **Event Preparation**, fill in the requested fields, and choose **Create Project**.
+4. Select **Plan a Trip**, **Host a Dinner**, or **Organize a Room**, fill in the requested fields, and choose **Create Project**.
 
 The shared plug-in has its own identifier so it can coexist with another Template Chooser. Keep customized personal templates in a separate local copy.
 
@@ -21,4 +21,4 @@ The included examples are generic. Replace them locally with your own templates.
 
 The plug-in runs locally and passes generated TaskPaper to OmniFocus through its URL scheme. It contains no account credentials, personal templates, or external service integration. Projects you create remain in your own OmniFocus database and follow your OmniFocus sync settings.
 
-Version 1.2 preserves punctuation after text placeholders, including the colon that identifies a TaskPaper project. Syntax and date/template processing were checked with synthetic examples. Installation and project creation in OmniFocus still need a fresh end-to-end check of this shared version.
+Version 1.2.1 includes three everyday starter projects and preserves punctuation after text placeholders, including the colon that identifies a TaskPaper project. Syntax and date/template processing were checked with synthetic examples. Installation and project creation in OmniFocus still need a fresh end-to-end check of this shared version.
