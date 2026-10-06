@@ -1,0 +1,247 @@
+/*{
+    "type": "action",
+    "targets": ["omnifocus"],
+    "author": "Template Chooser contributors",
+    "identifier": "org.community.omnifocus.template-chooser.shared",
+    "version": "1.2",
+    "description": "Choose from pre-made TaskPaper templates with dynamic date placeholders",
+    "label": "Template Chooser - Shared",
+    "shortLabel": "Templates",
+    "paletteLabel": "Templates",
+    "image": "doc.text"
+}*/
+
+(() => {
+    // ═══════════════════════════════════════════════════════════════════════════
+    // TEMPLATES SECTION - Add new templates here!
+    // 
+    // Each template has:
+    //   - name: Display name in the picker
+    //   - placeholders: Array of {key, label, type} where type is "date" or "text"
+    //   - taskpaper: The TaskPaper text with «placeholderKey» markers
+    //
+    // Date math syntax in taskpaper:
+    //   «key»           = the date itself
+    //   «key» -14d      = 14 days before
+    //   «key» -4w       = 4 weeks before
+    //   «key» +7d       = 7 days after
+    //   «key» 8am       = the date at 8am
+    //   «key» 3pm       = the date at 3pm
+    //   «key» -2d 10pm  = 2 days before at 10pm
+    //   «key» -7d 3pm   = 7 days before at 3pm
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // Public examples only. Keep personal templates in a separate local copy.
+    const TEMPLATES = [
+        {
+            name: "Example Project",
+            placeholders: [
+                {key: "projectname", label: "Project Name", type: "text"},
+                {key: "duedate", label: "Due Date", type: "date"}
+            ],
+            taskpaper: `«projectname»:
+- Plan the project @defer(«duedate» -14d) @due(«duedate» -7d)
+- Review the work @due(«duedate» -2d 3pm)
+- Finish the project @due(«duedate»)`
+        },
+        {
+            name: "Event Preparation",
+            placeholders: [
+                {key: "eventname", label: "Event Name", type: "text"},
+                {key: "eventdate", label: "Event Date", type: "date"}
+            ],
+            taskpaper: `«eventname»:
+- Confirm arrangements @due(«eventdate» -4w)
+- Prepare materials @due(«eventdate» -7d)
+- Send a reminder @due(«eventdate» -2d)
+- Pack equipment @due(«eventdate» -1d)`
+        }
+    ];
+
+    // Date calculation helper
+    function calculateDate(baseDate, modifiers) {
+        let result = new Date(baseDate);
+
+        if (!modifiers || modifiers.trim() === "") {
+            return result;
+        }
+
+        // Normalize the modifiers string
+        let normalized = modifiers.trim()
+            .replace(/\s+at\s+/gi, ' ')  // Remove "at" keyword
+            .replace(/\s+/g, ' ');        // Normalize spaces
+
+        const tokens = normalized.split(' ');
+
+        for (const token of tokens) {
+            // Check for relative date offset: -14d, +7d, -4w, -30d, etc.
+            const offsetMatch = token.match(/^([+-]?\d+)([dwmy])$/i);
+            if (offsetMatch) {
+                const amount = parseInt(offsetMatch[1]);
+                const unit = offsetMatch[2].toLowerCase();
+                
+                switch (unit) {
+                    case 'd':
+                        result.setDate(result.getDate() + amount);
+                        break;
+                    case 'w':
+                        result.setDate(result.getDate() + (amount * 7));
+                        break;
+                    case 'm':
+                        result.setMonth(result.getMonth() + amount);
+                        break;
+                    case 'y':
+                        result.setFullYear(result.getFullYear() + amount);
+                        break;
+                }
+                continue;
+            }
+
+            // Check for time: 8am, 3pm, 10pm, 12pm, 3:30pm, 6:00pm, 7:00am, 2:45pm etc.
+            const timeMatch = token.match(/^(\d{1,2})(?::(\d{2}))?(am|pm)$/i);
+            if (timeMatch) {
+                let hours = parseInt(timeMatch[1]);
+                const minutes = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+                const isPM = timeMatch[3].toLowerCase() === 'pm';
+                
+                if (isPM && hours !== 12) {
+                    hours += 12;
+                } else if (!isPM && hours === 12) {
+                    hours = 0;
+                }
+                
+                result.setHours(hours, minutes, 0, 0);
+            }
+        }
+
+        return result;
+    }
+
+    // Format date for OmniFocus TaskPaper
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        // Format: YYYY-MM-DD HH:MM
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+    }
+
+    // Process template with placeholder values
+    function processTemplate(template, values) {
+        let result = template.taskpaper;
+
+        // Find all placeholder references with optional modifiers
+        // Pattern matches: «key» followed by optional modifiers until ) or @ or newline or «
+        const placeholderPattern = /«(\w+)»([^)@\n«]*)?/g;
+
+        result = result.replace(placeholderPattern, (match, key, modifiers) => {
+            const placeholder = template.placeholders.find(p => p.key === key);
+            if (!placeholder) return match;
+
+            const value = values[key];
+            if (value === null || value === undefined) return match;
+
+            if (placeholder.type === "date") {
+                const calculatedDate = calculateDate(value, modifiers ? modifiers.trim() : "");
+                return formatDate(calculatedDate);
+            } else {
+                // Text placeholder - just return the value
+                return String(value) + (modifiers || "");
+            }
+        });
+
+        return result;
+    }
+
+    const action = new PlugIn.Action(async function(selection, sender) {
+        try {
+            // Step 1: Show template picker
+            const templateNames = TEMPLATES.map(t => t.name);
+            const templateIndices = TEMPLATES.map((t, i) => i);
+
+            const templateMenu = new Form.Field.Option(
+                "templateIndex",
+                "Template",
+                templateIndices,
+                templateNames,
+                0
+            );
+
+            const templateForm = new Form();
+            templateForm.addField(templateMenu);
+
+            const templateResult = await templateForm.show("Choose a template:", "Next");
+            const selectedTemplate = TEMPLATES[templateResult.values["templateIndex"]];
+
+            // Step 2: Check if template has placeholders
+            if (selectedTemplate.placeholders.length === 0) {
+                // No placeholders - just import directly
+                const encodedContent = encodeURIComponent(selectedTemplate.taskpaper);
+                const urlStr = `omnifocus:///paste?target=projects&content=${encodedContent}`;
+                URL.fromString(urlStr).open();
+                return;
+            }
+
+            // Step 3: Build form for placeholders
+            const placeholderForm = new Form();
+            
+            for (const placeholder of selectedTemplate.placeholders) {
+                if (placeholder.type === "date") {
+                    const dateField = new Form.Field.Date(
+                        placeholder.key,
+                        placeholder.label,
+                        new Date()
+                    );
+                    placeholderForm.addField(dateField);
+                } else {
+                    const textField = new Form.Field.String(
+                        placeholder.key,
+                        placeholder.label,
+                        null
+                    );
+                    placeholderForm.addField(textField);
+                }
+            }
+
+            // Validate that all fields have values
+            placeholderForm.validate = function(formObject) {
+                for (const placeholder of selectedTemplate.placeholders) {
+                    const value = formObject.values[placeholder.key];
+                    if (value === null || value === undefined || value === "") {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            const placeholderResult = await placeholderForm.show(
+                `Enter details for "${selectedTemplate.name}":`,
+                "Create Project"
+            );
+
+            // Step 4: Process template
+            const processedTaskPaper = processTemplate(selectedTemplate, placeholderResult.values);
+
+            // Step 5: Import via URL scheme
+            const encodedContent = encodeURIComponent(processedTaskPaper);
+            const urlStr = `omnifocus:///paste?target=projects&content=${encodedContent}`;
+            URL.fromString(urlStr).open();
+
+        } catch (err) {
+            if (!err.causedByUserCancelling) {
+                console.error(err.name, err.message);
+                new Alert("Error", err.message).show();
+            }
+        }
+    });
+
+    action.validate = function(selection, sender) {
+        // Always available
+        return true;
+    };
+
+    return action;
+})();
