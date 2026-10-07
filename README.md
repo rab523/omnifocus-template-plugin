@@ -1,6 +1,6 @@
 # Template Chooser for OmniFocus
 
-Create projects from reusable TaskPaper templates. Choose a template, enter its name and date, and the plug-in calculates the task dates before importing the project.
+Adds a user interface to OmniFocus for creating projects from TaskPaper templates. Turn reusable project plans into tasks with dates calculated from a date you choose. Adapt the templates for your own use.
 
 ## Install and use
 
