@@ -4,8 +4,8 @@ Adds a user interface to OmniFocus for creating projects from TaskPaper template
 
 ## Install and use
 
-1. Download [TemplateChooser-Shared.omnifocusjs](TemplateChooser-Shared.omnifocusjs?raw=true).
-2. Open the downloaded file with OmniFocus and follow its plug-in installation prompt. This requires an OmniFocus edition that supports Omni Automation.
+1. Download [Template Chooser](https://github.com/rab523/omnifocus-template-plugin/raw/refs/heads/main/TemplateChooser-Shared.zip) and unzip it.
+2. Open `TemplateChooser-Shared.omnifocusjs` with OmniFocus and follow its plug-in installation prompt. This requires an OmniFocus edition that supports Omni Automation.
 3. Choose **Template Chooser - Shared** from the Automation menu.
 4. Select **Plan a Trip**, **Host a Dinner**, or **Organize a Room**, fill in the requested fields, and choose **Create Project**.
 
